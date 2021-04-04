@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ngrash/ftl"
+	"github.com/ftlops/ftl"
 )
 
 func main() {

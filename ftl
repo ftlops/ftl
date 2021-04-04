@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 set -x -e -u
 
-ssh $1 mkdir -p /root/go/src/github.com/ngrash/ftl
-scp *.go $1:/root/go/src/github.com/ngrash/ftl/
+ssh $1 mkdir -p /root/go/src/github.com/ftlops/ftl
+scp *.go $1:/root/go/src/github.com/ftlops/ftl/
 
 
 date=$(date +%s)

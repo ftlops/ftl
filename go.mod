@@ -1,3 +1,3 @@
-module github.com/ngrash/ftl
+module github.com/ftlops/ftl
 
 go 1.15
