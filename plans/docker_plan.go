@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/ftlops/ftl"
 )
@@ -12,28 +11,43 @@ func main() {
 }
 
 func installDocker() {
-	log.Println(ftl.ListRepos())
 
-	log.Println("* install docker")
-	if ftl.MissingPackage("docker-ce") {
-		prereqs := []string{"apt-transport-https", "ca-certificates", "gnupg", "lsb-release"}
-		if missing := ftl.MissingPackages(prereqs...); len(missing) > 0 {
-			log.Println("** missing: ", missing)
-			log.Println("** update repos")
-			ftl.UpdateRepos()
-			log.Println("** install prerequisites")
-			ftl.Install(missing...)
+	ftl.Step("install docker", func(op *ftl.Ops) ftl.State {
+		if !op.MissingPackage("docker-ce") {
+			return ftl.StateUnchanged
 		}
 
-		log.Println("** get distro codename")
-		codename := ftl.DistroCodename()
+		op.Step("install prereqs", func(op *ftl.Ops) ftl.State {
+			prereqs := []string{
+				"apt-transport-https",
+				"ca-certificates",
+				"gnupg",
+				"lsb-release",
+			}
+			missing := op.MissingPackages(prereqs...)
+			if len(missing) == 0 {
+				return ftl.StateUnchanged
+			}
 
-		repo := fmt.Sprintf("deb [arch=amd64] https://download.docker.com/linux/ubuntu %s stable", codename)
-		if ftl.MissingRepo(repo) {
-			log.Println("** add repo")
-			ftl.AddRepo(repo, "https://download.docker.com/linux/ubuntu/gpg")
-		}
-		log.Println("** install docker-ce")
-		ftl.Install("docker-ce")
-	}
+			op.Log.Info("update repos")
+			op.UpdateRepos()
+			op.Log.Info("install prerequisites")
+			op.Install(missing...)
+			return ftl.StateChanged
+		})
+
+		op.Step("add repo", func(op *ftl.Ops) ftl.State {
+			codename := op.DistroCodename()
+			repo := fmt.Sprintf("deb [arch=amd64] https://download.docker.com/linux/ubuntu %s stable", codename)
+			if !op.MissingRepo(repo) {
+				return ftl.StateUnchanged
+			}
+			op.AddRepo(repo, "https://download.docker.com/linux/ubuntu/gpg")
+			return ftl.StateChanged
+		})
+
+		op.Log.Info("install docker-ce")
+		op.Install("docker-ce")
+		return ftl.StateChanged
+	})
 }
