@@ -11,26 +11,29 @@ func main() {
 	installDocker()
 }
 
-func must(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func installDocker() {
-	if len(ftl.Missing("docker-ce")) > 0 {
-		prereqs := []string{"apt-transport-https", "ca-certificates", "curl", "gnupg", "lsb-release"}
-		if missing := ftl.Missing(prereqs...); len(missing) > 0 {
-			must(ftl.UpdateRepos())
-			must(ftl.Install(missing...))
+	log.Println(ftl.ListRepos())
+
+	log.Println("* install docker")
+	if ftl.MissingPackage("docker-ce") {
+		prereqs := []string{"apt-transport-https", "ca-certificates", "gnupg", "lsb-release"}
+		if missing := ftl.MissingPackages(prereqs...); len(missing) > 0 {
+			log.Println("** missing: ", missing)
+			log.Println("** update repos")
+			ftl.UpdateRepos()
+			log.Println("** install prerequisites")
+			ftl.Install(missing...)
 		}
 
-		codename, err := ftl.DistroCodename()
-		if err != nil {
-			log.Fatal(err)
+		log.Println("** get distro codename")
+		codename := ftl.DistroCodename()
+
+		repo := fmt.Sprintf("deb [arch=amd64] https://download.docker.com/linux/ubuntu %s stable", codename)
+		if ftl.MissingRepo(repo) {
+			log.Println("** add repo")
+			ftl.AddRepo(repo, "https://download.docker.com/linux/ubuntu/gpg")
 		}
-		must(ftl.AddRepo(fmt.Sprintf("deb [arch=amd64] https://download.docker.com/linux/ubuntu %s stable", codename), "https://download.docker.com/linux/ubuntu/gpg"))
-		must(ftl.UpdateRepos())
-		must(ftl.Install("docker-ce"))
+		log.Println("** install docker-ce")
+		ftl.Install("docker-ce")
 	}
 }
