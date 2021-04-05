@@ -56,7 +56,7 @@ func main() {
 	mustSucceed(exec.Command("ssh", dest, fmt.Sprintf("mkdir -p %s", remotePlanPath)))
 
 	if fi.Mode().IsDir() {
-		// rsync needs the training slash to copy dir content and not dir itself
+		// rsync needs the trailing slash to copy dir content and not dir itself
 		if planPath[len(planPath)-1] != '/' {
 			planPath += "/"
 		}
