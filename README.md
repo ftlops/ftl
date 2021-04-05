@@ -1,5 +1,5 @@
 # ftl
-Configuration management in plain Go code.
+Configuration management in plain Go.
 
 **This is an early draft. Proceed with caution.**
 
